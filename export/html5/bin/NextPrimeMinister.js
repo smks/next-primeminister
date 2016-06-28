@@ -77,7 +77,7 @@ ApplicationMain.init = function() {
 	if(total == 0) ApplicationMain.start();
 };
 ApplicationMain.main = function() {
-	ApplicationMain.config = { build : "57", company : "shaunstone", file : "NextPrimeMinister", fps : 60, name : "NextPrimeMinister", orientation : "", packageName : "com.example.myapp", version : "0.0.1", windows : [{ antialiasing : 0, background : 0, borderless : false, depthBuffer : false, display : 0, fullscreen : false, hardware : false, height : 480, parameters : "{}", resizable : false, stencilBuffer : true, title : "NextPrimeMinister", vsync : true, width : 640, x : null, y : null}]};
+	ApplicationMain.config = { build : "59", company : "shaunstone", file : "NextPrimeMinister", fps : 60, name : "NextPrimeMinister", orientation : "", packageName : "com.example.myapp", version : "0.0.1", windows : [{ antialiasing : 0, background : 0, borderless : false, depthBuffer : false, display : 0, fullscreen : false, hardware : false, height : 480, parameters : "{}", resizable : false, stencilBuffer : true, title : "NextPrimeMinister", vsync : true, width : 640, x : null, y : null}]};
 };
 ApplicationMain.start = function() {
 	var hasMain = false;
@@ -2577,7 +2577,12 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 			_g.save();
 			_g.setFundsDisplay(_g.currentFunds);
 			flixel_FlxG.sound.playMusic("assets/music/cancan.ogg");
+			_g.bettingButtons.map(function(button) {
+				_g.remove(button);
+				button.destroy();
+			});
 		};
+		this.bettingButtons = [];
 		this.betMayButton = new flixel_ui_FlxButton(0,0,"THERESA MAY",function() {
 			_g.bettedOn = RACERS.MAY;
 			decisonMade();
@@ -2602,6 +2607,9 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		this.betGoveButton.set_x(flixel_FlxG.width - this.betGoveButton.get_width() * 3);
 		this.betGoveButton.set_y(flixel_FlxG.height - this.betGoveButton.get_height());
 		this.add(this.betGoveButton);
+		this.bettingButtons.push(this.betBorisButton);
+		this.bettingButtons.push(this.betMayButton);
+		this.bettingButtons.push(this.betGoveButton);
 	}
 	,update: function(elapsed) {
 		var _g = this;
