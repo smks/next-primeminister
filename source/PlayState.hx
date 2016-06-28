@@ -7,26 +7,35 @@ import flixel.system.scaleModes.PixelPerfectScaleMode;
 import flixel.text.FlxText;
 import flixel.ui.FlxButton;
 import flixel.math.FlxMath;
+import flixel.util.FlxDestroyUtil;
 import openfl.display.StageQuality;
 
-enum RACERS = {
-	GOVE, BORIS, MAY
+enum RACERS {
+	GOVE; 
+	BORIS;
+	MAY;
 }
 
 class PlayState extends FlxState
 {
-	var currentFunds:FlxText;
-	var betButton:FlxButton;
+	var currentFunds:Float = 300;
+	var currentFundsTextField:FlxText;
+	var betMayButton:FlxButton;
+	var betBorisButton:FlxButton;
+	var betGoveButton:FlxButton;
 	var bg:FlxSprite;
-	var gove:FlxSprite;
-	var boris:FlxSprite;
-	var may:FlxSprite;
-	var racers:Array<FlxSprite> = new Array();
+	var gove:Racer;
+	var boris:Racer;
+	var may:Racer;
 	
+	var racers:Array<Racer> = new Array();
 	var isRunning:Bool = false;
 	var gameOver:Bool = false;
 	var wallet:Float = 10;
-	var winner:String = '';
+	var winner:EnumValue;
+	var bettedOn:EnumValue;
+	var winnerTextField:FlxText;
+	var replayButton:FlxButton;
 	
 	override public function create():Void
 	{
@@ -36,11 +45,20 @@ class PlayState extends FlxState
 		FlxG.scaleMode = new PixelPerfectScaleMode();
 		FlxG.stage.quality = StageQuality.BEST;
 		
+		this.init();
 		this.addBg();
 		this.addCharacters();
 		this.addLabel();
-		this.addButton();
+		this.addButtons();
+	}
 	
+	function init() 
+	{
+		if (FlxG.save.data.currentFunds == null) {
+			FlxG.save.data.currentFunds = this.currentFunds;
+		} else {
+			this.currentFunds = FlxG.save.data.currentFunds;
+		}
 	}
 	
 	function addBg() 
@@ -52,15 +70,15 @@ class PlayState extends FlxState
 	
 	function addCharacters() 
 	{
-		may = new FlxSprite(17, 60);
+		may = new Racer(17, 60, RACERS.MAY);
 		may.loadGraphic('assets/images/may.png');
 		add(may);
 
-		boris = new FlxSprite(17, 144);
+		boris = new Racer(17, 144, RACERS.BORIS);
 		boris.loadGraphic('assets/images/boris.png');
 		add(boris);
 
-		gove = new FlxSprite(17, 231);
+		gove = new Racer(17, 231, RACERS.GOVE);
 		gove.loadGraphic('assets/images/gove.png');
 		add(gove);
 		
@@ -70,19 +88,52 @@ class PlayState extends FlxState
 	
 	function addLabel() 
 	{
-		currentFunds = new FlxText(10, FlxG.height, 0, "PLACE YOUR BETS ON THE NEW PRIME MINISTER");
-		currentFunds.setFormat("Font", 24, 0xffe1cac2, "center", FlxTextBorderStyle.SHADOW, 0xff1b1b1c);
-		add(currentFunds);
+		currentFundsTextField = new FlxText(10, 450, 0);
+		currentFundsTextField.setFormat("Font", 24, 0xffe1cac2, "center", FlxTextBorderStyle.SHADOW, 0xff1b1b1c);
+		this.setFundsDisplay(this.currentFunds);
+		add(currentFundsTextField);
 	}
 	
-	function addButton() 
+	function setFundsDisplay(funds:Float) {
+		this.currentFundsTextField.text = 'Wallet: ' + funds;
+	}
+	
+	function addButtons() 
 	{
-		betButton = new FlxButton(0, 0, 'BET', function() {
-			isRunning = true;
+		var decisonMade = function() {
+			this.isRunning = true;
+			this.currentFunds -= 20;
+			this.save();
+			this.setFundsDisplay(this.currentFunds);
+			FlxG.sound.playMusic("assets/music/cancan.ogg");
+		};
+		
+		betMayButton = new FlxButton(0, 0, 'THERESA MAY', function() {
+			bettedOn = RACERS.MAY;
+			decisonMade();
 		});
-		betButton.x = FlxG.width - betButton.width;
-		betButton.y = FlxG.height - betButton.height;
-		add(betButton);
+		betMayButton.makeGraphic(100, 20, 0xFFCCCCCC);
+		betMayButton.x = FlxG.width - betMayButton.width;
+		betMayButton.y = FlxG.height - betMayButton.height;
+		add(betMayButton);
+		
+		betBorisButton = new FlxButton(0, 0, 'BORIS JOHNSON', function() {
+			bettedOn = RACERS.BORIS;
+			decisonMade();
+		});
+		betBorisButton.makeGraphic(100, 20, 0xFFCCCCCC);
+		betBorisButton.x = FlxG.width - (betBorisButton.width * 2);
+		betBorisButton.y = FlxG.height - betBorisButton.height;
+		add(betBorisButton);
+		
+		betGoveButton = new FlxButton(0, 0, 'MICHAEL GOVE', function() {
+			bettedOn = RACERS.GOVE;
+			decisonMade();
+		});
+		betGoveButton.makeGraphic(100, 20, 0xFFCCCCCC);
+		betGoveButton.x = FlxG.width - (betGoveButton.width * 3);
+		betGoveButton.y = FlxG.height - betGoveButton.height;
+		add(betGoveButton);
 	}
 
 	override public function update(elapsed:Float):Void
@@ -91,12 +142,100 @@ class PlayState extends FlxState
 		
 		if (isRunning && !gameOver) {
 			
-			racers.map(function(racer) {
-				racer.x += FlxG.random.float(0.1, 5);
+			racers.map(function(racer:Racer) {
+				racer.x += FlxG.random.float(0.1, 1.5);
 				if (racer.x > (FlxG.width - racer.width)) {
 					gameOver = true;
+					winner = racer.getName();
 				}
-			}
+			});
+		}
+		
+		if (isRunning && gameOver) {
+			isRunning = false;
+			concludeResult();
+		}
+	}
+	
+	function save() {
+		FlxG.save.data.currentFunds = this.currentFunds;
+		FlxG.save.flush();
+	}
+	
+	/**
+	 * Save result
+	 */
+	function concludeResult() 
+	{
+		if (winner == bettedOn) {
+			this.currentFunds += 100;
+			this.save();			
+		}
+		
+		this.setFundsDisplay(this.currentFunds);
+		
+		this.showWinner();
+		this.addReplay();
+	}
+	
+	function addReplay() 
+	{
+		replayButton = new FlxButton(0, 0, 'REPLAY', function() {
+			FlxG.switchState(new PlayState());
 		});
+		replayButton.makeGraphic(100, 20, 0xFFCCCCCC);
+		replayButton.x = FlxG.width / 2 - (this.replayButton.width / 2);
+		replayButton.y = FlxG.height - 300;
+		add(replayButton);
+	}
+	
+	function showWinner() 
+	{
+		winnerTextField = new FlxText(
+			0, FlxG.height / 2, FlxG.width, 
+			this.didWin() + 'The winner is:\n ' + this.determineWinner().toUpperCase()
+		);
+		winnerTextField.setFormat("Font", 24, 0xffffffff, "center", FlxTextBorderStyle.NONE);
+		add(winnerTextField);
+	}
+	
+	function didWin():String
+	{
+		if (winner == bettedOn) {
+			return 'YOU WON!\n';
+		}
+		
+		return 'YOU LOST!\n';
+	}
+	
+	function determineWinner():String
+	{
+		switch (winner)
+		{
+			case RACERS.BORIS:
+				return 'Boris Johnson';
+			case RACERS.GOVE:
+				return 'Michael Gove';
+			case RACERS.MAY:
+				return 'Theresa May';
+		}
+		
+		return 'No-one';
+	}
+	
+	override public function destroy():Void 
+	{
+		FlxG.sound.pause();
+		
+		FlxDestroyUtil.destroy(currentFundsTextField);
+		FlxDestroyUtil.destroy(betMayButton);
+		FlxDestroyUtil.destroy(betBorisButton);
+		FlxDestroyUtil.destroy(betGoveButton);
+		FlxDestroyUtil.destroy(bg);
+		FlxDestroyUtil.destroy(gove);
+		FlxDestroyUtil.destroy(boris);
+		FlxDestroyUtil.destroy(may);
+		
+		super.destroy();
 	}
 }

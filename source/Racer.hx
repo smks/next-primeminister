@@ -8,11 +8,17 @@ import flixel.system.FlxAssets.FlxGraphicAsset;
  */
 class Racer extends FlxSprite
 {
+	var name:EnumValue;
 
-	public function new(?X:Float=0, ?Y:Float=0, ?SimpleGraphic:FlxGraphicAsset) 
+	public function new(X:Float, Y:Float, name:EnumValue) 
 	{
-		super(X, Y, SimpleGraphic);
-		
+		this.name = name;
+		super(X, Y);
+	}
+	
+	public function getName():EnumValue
+	{
+		return this.name;
 	}
 	
 }
