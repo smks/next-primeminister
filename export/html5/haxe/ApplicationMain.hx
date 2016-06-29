@@ -155,7 +155,7 @@ class ApplicationMain {
 		
 		config = {
 			
-			build: "59",
+			build: "68",
 			company: "shaunstone",
 			file: "NextPrimeMinister",
 			fps: 60,

@@ -77,7 +77,7 @@ ApplicationMain.init = function() {
 	if(total == 0) ApplicationMain.start();
 };
 ApplicationMain.main = function() {
-	ApplicationMain.config = { build : "59", company : "shaunstone", file : "NextPrimeMinister", fps : 60, name : "NextPrimeMinister", orientation : "", packageName : "com.example.myapp", version : "0.0.1", windows : [{ antialiasing : 0, background : 0, borderless : false, depthBuffer : false, display : 0, fullscreen : false, hardware : false, height : 480, parameters : "{}", resizable : false, stencilBuffer : true, title : "NextPrimeMinister", vsync : true, width : 640, x : null, y : null}]};
+	ApplicationMain.config = { build : "68", company : "shaunstone", file : "NextPrimeMinister", fps : 60, name : "NextPrimeMinister", orientation : "", packageName : "com.example.myapp", version : "0.0.1", windows : [{ antialiasing : 0, background : 0, borderless : false, depthBuffer : false, display : 0, fullscreen : false, hardware : false, height : 480, parameters : "{}", resizable : false, stencilBuffer : true, title : "NextPrimeMinister", vsync : true, width : 640, x : null, y : null}]};
 };
 ApplicationMain.start = function() {
 	var hasMain = false;
@@ -2540,6 +2540,7 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 	}
 	,init: function() {
 		if(flixel_FlxG.save.data.currentFunds == null) flixel_FlxG.save.data.currentFunds = this.currentFunds; else this.currentFunds = flixel_FlxG.save.data.currentFunds;
+		this.counter = 0;
 	}
 	,addBg: function() {
 		this.bg = new flixel_FlxSprite(0,0);
@@ -2611,15 +2612,28 @@ PlayState.prototype = $extend(flixel_FlxState.prototype,{
 		this.bettingButtons.push(this.betMayButton);
 		this.bettingButtons.push(this.betGoveButton);
 	}
+	,getSpeed: function() {
+		var speed = 0;
+		this.counter++;
+		if(this.counter == 10) {
+			this.counter = 0;
+			speed = flixel_FlxG.random["float"](0.1,10);
+			haxe_Log.trace("changing speed to " + speed,{ fileName : "PlayState.hx", lineNumber : 162, className : "PlayState", methodName : "getSpeed"});
+		}
+		return speed;
+	}
 	,update: function(elapsed) {
 		var _g = this;
 		flixel_FlxState.prototype.update.call(this,elapsed);
 		if(this.isRunning && !this.gameOver) this.racers.map(function(racer) {
-			var _g1 = racer;
-			_g1.set_x(_g1.x + flixel_FlxG.random["float"](0.1,1.5));
-			if(racer.x > flixel_FlxG.width - racer.get_width()) {
-				_g.gameOver = true;
-				_g.winner = racer.getName();
+			var speed = _g.getSpeed();
+			if(speed > 0) {
+				var _g1 = racer;
+				_g1.set_x(_g1.x + speed);
+				if(racer.x > flixel_FlxG.width - racer.get_width()) {
+					_g.gameOver = true;
+					_g.winner = racer.getName();
+				}
 			}
 		});
 		if(this.isRunning && this.gameOver) {

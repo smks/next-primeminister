@@ -37,6 +37,7 @@ class PlayState extends FlxState
 	var winnerTextField:FlxText;
 	var replayButton:FlxButton;
 	var bettingButtons:Array<FlxButton>;
+	var counter:Float;
 	
 	override public function create():Void
 	{
@@ -60,6 +61,8 @@ class PlayState extends FlxState
 		} else {
 			this.currentFunds = FlxG.save.data.currentFunds;
 		}
+		
+		this.counter = 0;
 	}
 	
 	function addBg() 
@@ -148,12 +151,15 @@ class PlayState extends FlxState
 		bettingButtons.push(betGoveButton);
 	}
 
-	inline function getSpeed(elapsed:Float)
+	inline function getSpeed()
 	{
 		var speed:Float = 0;
+		this.counter++;
 
-		if (elapsed % 60 == 0) {
-			speed = FlxG.random.float(6, 90);
+		if (counter == 10) {
+			counter = 0;
+			speed = FlxG.random.float(0.1, 10);
+			trace('changing speed to ' + speed);
 		}
 
 		return speed;
@@ -167,7 +173,7 @@ class PlayState extends FlxState
 			
 			racers.map(function(racer:Racer) {
 
-				var speed:Float = this.getSpeed(elapsed);
+				var speed:Float = this.getSpeed();
 
 				if (speed > 0) {
 					racer.x += speed;
