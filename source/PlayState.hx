@@ -153,7 +153,7 @@ class PlayState extends FlxState
 		var speed:Float = 0;
 
 		if (elapsed % 60 == 0) {
-			speed = FlxG.random.float(0.6, 90);
+			speed = FlxG.random.float(6, 90);
 		}
 
 		return speed;
@@ -171,11 +171,10 @@ class PlayState extends FlxState
 
 				if (speed > 0) {
 					racer.x += speed;
-				}
-
-				if (racer.x > (FlxG.width - racer.width)) {
-					gameOver = true;
-					winner = racer.getName();
+					if (racer.x > (FlxG.width - racer.width)) {
+						gameOver = true;
+						winner = racer.getName();
+					}
 				}
 			});
 		}
