@@ -36,6 +36,7 @@ class PlayState extends FlxState
 	var bettedOn:EnumValue;
 	var winnerTextField:FlxText;
 	var replayButton:FlxButton;
+	var bettingButtons:Array<FlxButton>;
 	
 	override public function create():Void
 	{
@@ -106,7 +107,14 @@ class PlayState extends FlxState
 			this.save();
 			this.setFundsDisplay(this.currentFunds);
 			FlxG.sound.playMusic("assets/music/cancan.ogg");
+			
+			bettingButtons.map(function(button:FlxButton) {
+				this.remove(button);
+				button.destroy();
+			});
 		};
+		
+		bettingButtons = new Array();
 		
 		betMayButton = new FlxButton(0, 0, 'THERESA MAY', function() {
 			bettedOn = RACERS.MAY;
@@ -134,6 +142,10 @@ class PlayState extends FlxState
 		betGoveButton.x = FlxG.width - (betGoveButton.width * 3);
 		betGoveButton.y = FlxG.height - betGoveButton.height;
 		add(betGoveButton);
+		
+		bettingButtons.push(betBorisButton);
+		bettingButtons.push(betMayButton);
+		bettingButtons.push(betGoveButton);
 	}
 
 	inline function getSpeed(elapsed:Float)
