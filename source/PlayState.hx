@@ -136,6 +136,17 @@ class PlayState extends FlxState
 		add(betGoveButton);
 	}
 
+	inline function getSpeed(elapsed:Float)
+	{
+		var speed:Float = 0;
+
+		if (elapsed % 60 == 0) {
+			speed = FlxG.random.float(0.6, 90);
+		}
+
+		return speed;
+	}
+
 	override public function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
@@ -143,7 +154,13 @@ class PlayState extends FlxState
 		if (isRunning && !gameOver) {
 			
 			racers.map(function(racer:Racer) {
-				racer.x += FlxG.random.float(0.1, 1.5);
+
+				var speed:Float = this.getSpeed(elapsed);
+
+				if (speed > 0) {
+					racer.x += speed;
+				}
+
 				if (racer.x > (FlxG.width - racer.width)) {
 					gameOver = true;
 					winner = racer.getName();
